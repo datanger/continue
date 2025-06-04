@@ -1486,6 +1486,15 @@ export interface ContinueConfig {
   modelsByRole: Record<ModelRole, ILLM[]>;
   selectedModelByRole: Record<ModelRole, ILLM | null>;
   data?: DataDestination[];
+  graphrag?: {
+    enabled: boolean;
+    serverUrl: string;
+    indexingMethod: "standard" | "fast";
+    modelConfig: {
+      chatModel: "deepseek-chat";
+      embeddingModel: "zhipu-embedding";
+    };
+  };
 }
 
 export interface BrowserSerializedContinueConfig {

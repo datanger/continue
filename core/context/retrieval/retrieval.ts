@@ -5,6 +5,7 @@ import { INSTRUCTIONS_BASE_ITEM } from "../providers/utils";
 import { RetrievalPipelineOptions } from "./pipelines/BaseRetrievalPipeline";
 import NoRerankerRetrievalPipeline from "./pipelines/NoRerankerRetrievalPipeline";
 import RerankerRetrievalPipeline from "./pipelines/RerankerRetrievalPipeline";
+import GraphRAGRetrievalPipeline from "./pipelines/GraphRAGRetrievalPipeline";
 
 const DEFAULT_N_FINAL = 25;
 
@@ -54,9 +55,14 @@ export async function retrieveContextItemsFromEmbeddings(
     branch: branches[i],
   }));
 
-  const pipelineType = useReranking
-    ? RerankerRetrievalPipeline
-    : NoRerankerRetrievalPipeline;
+  let pipelineType;
+  if (extras.config.graphrag?.enabled) {
+    pipelineType = GraphRAGRetrievalPipeline;
+  } else if (useReranking) {
+    pipelineType = RerankerRetrievalPipeline;
+  } else {
+    pipelineType = NoRerankerRetrievalPipeline;
+  }
 
   const pipelineOptions: RetrievalPipelineOptions = {
     nFinal,

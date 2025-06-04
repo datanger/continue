@@ -1,4 +1,5 @@
 import * as path from "path";
+import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 
 import { getContinueRcPath, getTsConfigPath } from "core/util/paths";
 import { Telemetry } from "core/util/posthog";
@@ -10,6 +11,8 @@ import { getExtensionVersion } from "../util/util";
 
 import { VsCodeContinueApi } from "./api";
 import setupInlineTips from "./InlineTipManager";
+
+let graphragProcess: ChildProcessWithoutNullStreams | undefined;
 
 export async function activateExtension(context: vscode.ExtensionContext) {
   // Add necessary files
@@ -67,6 +70,34 @@ export async function activateExtension(context: vscode.ExtensionContext) {
     registerCustomContextProvider: api.registerCustomContextProvider.bind(api),
   };
 
+  // === 自动启动 graphrag 服务 ===
+  const pythonExe = "python"; // 或 "python3"，可根据实际环境调整
+  const uvicornExe = "uvicorn";
+  const scriptPath = path.join(context.extensionPath, "scripts", "graphrag_server.py");
+  const uvicornArgs = [
+    `${scriptPath.replace(/\\/g, "/")}:app`,
+    "--host", "127.0.0.1",
+    "--port", "8000"
+  ];
+  graphragProcess = spawn(uvicornExe, uvicornArgs, {
+    cwd: context.extensionPath,
+    shell: true,
+    env: process.env,
+  });
+  graphragProcess.stdout.on("data", (data) => {
+    console.log(`[graphrag] ${data}`);
+  });
+  graphragProcess.stderr.on("data", (data) => {
+    console.error(`[graphrag] ${data}`);
+  });
+  context.subscriptions.push({
+    dispose: () => {
+      if (graphragProcess) {
+        graphragProcess.kill();
+      }
+    }
+  });
+
   // 'export' public api-surface
   // or entire extension for testing
   return process.env.NODE_ENV === "test"
@@ -75,4 +106,10 @@ export async function activateExtension(context: vscode.ExtensionContext) {
         extension: vscodeExtension,
       }
     : continuePublicApi;
+}
+
+export function deactivate() {
+  if (graphragProcess) {
+    graphragProcess.kill();
+  }
 }
