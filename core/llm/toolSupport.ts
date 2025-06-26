@@ -155,6 +155,7 @@ export const PROVIDER_TOOL_SUPPORT: Record<string, (model: string) => boolean> =
           "firefunction-v2",
           "mistral",
           "devstral",
+          "deepseek",
         ].some((part) => modelName.toLowerCase().includes(part))
       ) {
         return true;

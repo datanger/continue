@@ -93,9 +93,36 @@ We recommend configuring **Nomic Embed Text** as your embeddings model.
 
 ## Reranking model
 
-Ollama currently does not offer any reranking models.
+Ollama now supports reranking using any chat model. You can configure it as follows:
 
-[Click here](../../model-roles/reranking.mdx) to see a list of reranking model providers.
+<Tabs groupId="config-example">
+    <TabItem value="yaml" label="YAML">
+    ```yaml title="config.yaml"
+    models:
+      - name: Llama3.1 8B Reranker
+        provider: ollama
+        model: llama3.1:8b
+        roles:
+          - rerank
+    ```
+    </TabItem>
+    <TabItem value="json" label="JSON">
+    ```json title="config.json"
+    {
+      "reranker": {
+        "name": "ollama",
+        "params": {
+          "model": "llama3.1:8b"
+        }
+      }
+    }
+    ```
+    </TabItem>
+</Tabs>
+
+:::note
+Ollama reranking uses the same prompt-based approach as the LLM reranker, which may be slower and more expensive than specialized reranking models like Voyage AI's rerank-2. For better performance, consider using dedicated reranking models.
+:::
 
 ## Using a remote instance
 

@@ -48,6 +48,21 @@ slug: ../ollama
 
 ## 重排序模型
 
-Ollama 当前没有提供任何重排序模型。
+Ollama 现在支持使用任何聊天模型进行重排序。你可以按以下方式配置：
+
+```json title="config.json"
+{
+  "reranker": {
+    "name": "ollama",
+    "params": {
+      "model": "llama3.1:8b"
+    }
+  }
+}
+```
+
+:::note
+Ollama 重排序使用与 LLM 重排序器相同的基于提示的方法，这可能比专门的重排序模型（如 Voyage AI 的 rerank-2）更慢且更昂贵。为了获得更好的性能，请考虑使用专门的重排序模型。
+:::
 
 [点击这里](../../model-roles/reranking.md) 查看重排序模型提供者列表。
