@@ -1282,4 +1282,17 @@ export class Core {
       console.error("[Core] Error disposing Gemini Proxy services:", error);
     }
   }
+
+  /**
+   * 清理资源，停止所有 Gemini Proxy 服务
+   */
+  async dispose() {
+    try {
+      // 清理 GeminiProxyMode 中的进程
+      GeminiProxyMode.dispose();
+      console.log("[Core] Disposed Gemini Proxy services");
+    } catch (error) {
+      console.error("[Core] Error disposing Gemini Proxy services:", error);
+    }
+  }
 }
