@@ -76,6 +76,7 @@ import type { FromCoreProtocol, ToCoreProtocol } from "./protocol";
 import { OnboardingModes } from "./protocol/core";
 import type { IMessenger, Message } from "./protocol/messenger";
 import { getUriPathBasename } from "./util/uri";
+import GeminiProxyMode from "./llm/llms/GeminiProxyMode";
 
 const hasRulesFiles = (uris: string[]): boolean => {
   for (const uri of uris) {
@@ -1268,4 +1269,17 @@ export class Core {
       return [];
     }
   };
+
+  /**
+   * 清理资源，停止所有 Gemini Proxy 服务
+   */
+  async dispose() {
+    try {
+      // 清理 GeminiProxyMode 中的进程
+      GeminiProxyMode.dispose();
+      console.log("[Core] Disposed Gemini Proxy services");
+    } catch (error) {
+      console.error("[Core] Error disposing Gemini Proxy services:", error);
+    }
+  }
 }

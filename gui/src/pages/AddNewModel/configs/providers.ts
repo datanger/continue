@@ -997,4 +997,35 @@ To get started, [register](https://dataplatform.cloud.ibm.com/registration/stepo
     packages: [{ ...models.AUTODETECT }],
     apiKeyUrl: "https://venice.ai/chat",
   },
+  geminiProxy: {
+    title: "Gemini-CLI",
+    provider: "gemini-proxy",
+    description: "通过本地 gemini-proxy/gemini-cli 实现的多轮对话和 agent 能力，所有上下文由 gemini-cli 维护。",
+    icon: "gemini.png",
+    tags: [ModelProviderTags.Local, ModelProviderTags.OpenSource],
+    collectInputFor: [
+      {
+        inputType: "text",
+        key: "proxyUrl",
+        label: "Proxy URL",
+        placeholder: "http://127.0.0.1:5001/ask",
+        required: true,
+        defaultValue: "http://127.0.0.1:5001/ask",
+      },
+    ],
+    packages: [
+      {
+        title: "Gemini-CLI",
+        description: "通过本地 gemini-proxy/gemini-cli 实现的多轮对话和 agent 能力，所有上下文由 gemini-cli 维护。",
+        params: {
+          model: "gemini-proxy",
+          contextLength: 1000000,
+          proxyUrl: "http://127.0.0.1:5001/ask",
+        },
+        icon: "gemini.png",
+        providerOptions: ["gemini-proxy"],
+        isOpenSource: true,
+      },
+    ],
+  },
 };

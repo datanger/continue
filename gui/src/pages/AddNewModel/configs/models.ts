@@ -1822,4 +1822,17 @@ export const models: { [key: string]: ModelPackage } = {
     providerOptions: [],
     isOpenSource: false,
   },
+  geminiProxy: {
+    title: "Gemini-CLI",
+    description: "通过本地 gemini-proxy/gemini-cli 实现的多轮对话和 agent 能力，所有上下文由 gemini-cli 维护。",
+    params: {
+      title: "Gemini-CLI",
+      model: "gemini-proxy",
+      contextLength: 1000000,
+      proxyUrl: "http://127.0.0.1:5001/ask",
+    },
+    icon: "gemini.png",
+    providerOptions: ["gemini-proxy"],
+    isOpenSource: true,
+  },
 };
