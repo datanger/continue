@@ -132,6 +132,16 @@ export class ContinueGUIWebviewViewProvider
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy" content="
+          default-src 'none';
+          script-src 'self' 'unsafe-eval' 'unsafe-inline' vscode-resource: http://localhost:* https:;
+          style-src 'self' 'unsafe-inline' vscode-resource: http://localhost:* https:;
+          img-src 'self' vscode-resource: https: data:;
+          font-src 'self' vscode-resource: https: data:;
+          connect-src 'self' https: wss: ws: http://localhost:*;
+          worker-src 'self' blob:;
+          frame-src 'self' vscode-resource: https:;
+        ">
         <script>const vscode = acquireVsCodeApi();</script>
         <link href="${styleMainUri}" rel="stylesheet">
 

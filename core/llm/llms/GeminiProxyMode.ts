@@ -20,6 +20,24 @@ export class GeminiProxyMode extends BaseLLM {
   private static appProcess: any = null;
   private static isStarting = false;
   private static serviceReady = false; // 新增：服务就绪状态
+  private static readonly rootDir: string = GeminiProxyMode.getWorkspaceRoot();
+
+  private static getWorkspaceRoot(): string {
+    // Try to detect VS Code workspace root when running inside the extension host.
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const vscode = require("vscode");
+      if (vscode?.workspace?.workspaceFolders?.length) {
+        return vscode.workspace.workspaceFolders[0].uri.fsPath;
+      }
+    } catch (error) {
+      // vscode module not available – fallback to cwd
+      console.error("[GeminiProxyMode] Error getting workspace root:", error);
+    }
+
+    // Fallback to current working directory
+    return process.cwd();
+  }
 
   constructor(options: any = {}) {
     super({ ...options, model: options.model || "gemini-proxy" });
@@ -46,7 +64,8 @@ export class GeminiProxyMode extends BaseLLM {
    * 确保必需的文件存在
    */
   private async ensureRequiredFiles(): Promise<void> {
-    const continueDir = path.join(process.cwd(), ".continue");
+    const workspaceRoot = GeminiProxyMode.rootDir;
+    const continueDir = path.join(workspaceRoot, ".continue");
     const geminiCliDir = path.join(continueDir, "gemini_proxy");
     const appPyPath = path.join(geminiCliDir, "app.py");
     const geminiProcessPath = path.join(geminiCliDir, "gemini_process.py");
@@ -500,7 +519,7 @@ class GeminiProcess:
   private hasAppPyFile(): boolean {
     try {
       // 检查当前工作目录的 .continue/gemini_proxy 文件夹
-      const appPyPath = path.join(process.cwd(), ".continue", "gemini_proxy", "app.py");
+      const appPyPath = path.join(GeminiProxyMode.rootDir, ".continue", "gemini_proxy", "app.py");
       return fs.existsSync(appPyPath);
     } catch {
       return false;
@@ -550,15 +569,20 @@ class GeminiProcess:
     try {
       console.log("[GeminiProxyMode] Starting app.py service...");
       
-      const appPyPath = path.join(process.cwd(), ".continue", "gemini_proxy", "app.py");
+      const appPyPath = path.join(GeminiProxyMode.rootDir, ".continue", "gemini_proxy", "app.py");
       
+      // 选择跨平台 Python 命令
+      const pythonCmd =
+        process.env.CONTINUE_PYTHON ||
+        (process.platform === "win32" ? "python" : "python3");
+
       // 启动 Python 进程
-      GeminiProxyMode.appProcess = spawn("python", [appPyPath], {
-        cwd: process.cwd(),
+      GeminiProxyMode.appProcess = spawn(pythonCmd, [appPyPath], {
+        cwd: GeminiProxyMode.rootDir,
         stdio: ["pipe", "pipe", "pipe"],
         env: {
           ...process.env,
-          PYTHONPATH: process.cwd(),
+          PYTHONPATH: GeminiProxyMode.rootDir,
         },
       });
 

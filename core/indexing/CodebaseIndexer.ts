@@ -97,6 +97,7 @@ export class CodebaseIndexer {
     this.pauseToken = new PauseToken(initialPaused);
 
     this.initPromise = this.init(configHandler);
+    this.indexingCancellationController = new AbortController();
   }
 
   // Initialization - load config and attach config listener
