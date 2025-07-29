@@ -122,6 +122,8 @@ void (async () => {
 
   // Then copy over the dist folder to the VSCode extension //
   const vscodeGuiPath = path.join("../extensions/vscode/gui");
+  // Remove existing contents to avoid large incremental copy slowdown
+  rimrafSync(vscodeGuiPath);
   fs.mkdirSync(vscodeGuiPath, { recursive: true });
   await new Promise((resolve, reject) => {
     ncp("dist", vscodeGuiPath, (error) => {
