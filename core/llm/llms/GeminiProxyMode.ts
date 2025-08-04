@@ -446,6 +446,10 @@ class GeminiProcess:
         try:
             logger.info(f"Sending prompt to gemini ({self.provider}/{self.model}): {prompt[:50]}...")
             
+            # 清理管道信息
+            while not self.output_queue.empty():
+                self.output_queue.get()
+
             # 发送 prompt
             self.process.stdin.write(prompt + '\\n')
             self.process.stdin.flush()
