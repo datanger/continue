@@ -315,6 +315,12 @@ Gemini Process Manager
 管理 gemini-cli 进程的启动、通信和生命周期
 """
 
+#!/usr/bin/env python3
+"""
+Gemini Process Manager
+管理 gemini-cli 进程的启动、通信和生命周期
+"""
+
 import os
 import json
 import re
@@ -386,6 +392,10 @@ class GeminiProcess:
             
             logger.info(f"Starting gemini process with provider={self.provider}, model={self.model}")
             
+            # 在 Windows 环境下使用 shell=True 来确保能找到命令
+            import platform
+            use_shell = platform.system() == 'Windows'
+            
             # 使用 subprocess.Popen 替代 pexpect
             self.process = subprocess.Popen(
                 cmd,
@@ -395,7 +405,10 @@ class GeminiProcess:
                 text=True,
                 bufsize=1,
                 universal_newlines=True,
-                env=env
+                env=env,
+                shell=use_shell,
+                encoding='utf-8',
+                errors='replace'
             )
             
             # 启动输出监听线程
@@ -426,6 +439,9 @@ class GeminiProcess:
                     if not line.startswith('Data collection is disabled'):
                         self.output_queue.put(line)
                         logger.debug(f"Output: {line}")
+            except UnicodeDecodeError as e:
+                logger.warning(f"Unicode decode error: {e}")
+                continue
             except Exception as e:
                 logger.error(f"Output monitoring error: {e}")
                 break
@@ -451,7 +467,7 @@ class GeminiProcess:
                 self.output_queue.get()
 
             # 发送 prompt
-            self.process.stdin.write(prompt + '\\n')
+            self.process.stdin.write(prompt + '\n')
             self.process.stdin.flush()
             
             # 等待完整响应
@@ -463,7 +479,7 @@ class GeminiProcess:
               # 非阻塞方式获取输出
               try:
                   line = self.output_queue.get_nowait()
-                  line = re.sub(r'🤖 Output:\s?', '', line)
+                  line = re.sub(r'🤖 Output:s?', '', line)
                   if not line.strip():
                       continue
                   elif line.strip() == '👤 Input:':
@@ -514,6 +530,11 @@ class GeminiProcess:
         
         logger.info(f"Updating config: provider={self.provider}, model={self.model}")
         self.restart()
+
+if __name__ == "__main__":
+    gemini = GeminiProcess(provider = "deepseek", model = "deepseek-chat", api_key = "sk-7f73aeb6f5104c748f7b2c25d9483b64")
+    print(gemini.send_prompt('你好'))
+
 `;
   }
 
