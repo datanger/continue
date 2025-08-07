@@ -137,9 +137,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
-CORS(app)
-
 # 默认配置
 DEFAULT_PROVIDER = os.environ.get('GEMINI_PROVIDER', 'deepseek')
 DEFAULT_MODEL = os.environ.get('GEMINI_MODEL', 'deepseek-chat')
@@ -150,6 +147,10 @@ DEFAULT_OLLAMA_BASE_URL = os.environ.get('OLLAMA_BASE_URL', 'http://127.0.0.1:11
 DEFAULT_LOCAL_BASE_URL = os.environ.get('LOCAL_BASE_URL', 'http://127.0.0.1:8080')
 DEFAULT_DEEPSEEK_API_BASE = os.environ.get('DEEPSEEK_API_BASE', 'https://api.deepseek.com')
 DEFAULT_OPENAI_API_BASE = os.environ.get('OPENAI_API_BASE', 'https://api.openai.com')
+
+# 初始化 Flask 应用
+app = Flask(__name__)
+CORS(app)
 
 # 初始化 Gemini 进程
 gemini = GeminiProcess(
@@ -315,11 +316,6 @@ Gemini Process Manager
 管理 gemini-cli 进程的启动、通信和生命周期
 """
 
-#!/usr/bin/env python3
-"""
-Gemini Process Manager
-管理 gemini-cli 进程的启动、通信和生命周期
-"""
 
 import os
 import json
@@ -419,7 +415,7 @@ class GeminiProcess:
             
             # 等待初始化
             time.sleep(3)
-            logger.info(f"Started gemini process in interactive JSON mode with provider={self.provider}, model={self.model}")
+            logger.info(f"Started gemini process with provider={self.provider}, model={self.model}")
             
         except Exception as e:
             logger.error(f"Failed to start gemini process: {e}")
@@ -467,7 +463,7 @@ class GeminiProcess:
                 self.output_queue.get()
 
             # 发送 prompt
-            self.process.stdin.write(prompt + '\n')
+            self.process.stdin.write(prompt + '\\n')
             self.process.stdin.flush()
             
             # 等待完整响应
@@ -601,14 +597,29 @@ if __name__ == "__main__":
         process.env.CONTINUE_PYTHON ||
         (process.platform === "win32" ? "python" : "python3");
 
+      // 准备环境变量
+      const env: NodeJS.ProcessEnv = {
+        ...process.env,
+        PYTHONPATH: GeminiProxyMode.rootDir,
+      };
+
+      // Windows 环境下的特殊处理
+      if (process.platform === "win32") {
+        // 设置Python相关环境变量
+        env.PYTHONIOENCODING = "utf-8";
+        env.PYTHONUNBUFFERED = "1";
+        
+        // 完全移除NODE_OPTIONS，避免传递给Python进程
+        delete env.NODE_OPTIONS;
+        
+        console.log("[GeminiProxyMode] Windows environment detected, cleaning NODE_OPTIONS");
+      }
+
       // 启动 Python 进程
       GeminiProxyMode.appProcess = spawn(pythonCmd, [appPyPath], {
         cwd: GeminiProxyMode.rootDir,
         stdio: ["pipe", "pipe", "pipe"],
-        env: {
-          ...process.env,
-          PYTHONPATH: GeminiProxyMode.rootDir,
-        },
+        env: env,
       });
 
       // 设置进程事件处理
